@@ -1,0 +1,10 @@
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_lpadc.h:661:20:LPADC_EnableInterrupts	16	static
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_lpadc.h:689:20:LPADC_EnableFIFO0WatermarkDMA	16	static
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_lpadc.h:707:20:LPADC_EnableFIFO1WatermarkDMA	16	static
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:503:20:SCTIMER_StartTimer	16	static
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:853:20:SCTIMER_SetupNextStateAction	32	static
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:937:20:SCTIMER_SetupCounterLimitAction	24	static
+../board/peripherals.c:271:13:ADC0_init	8	static
+../board/peripherals.c:509:13:SCT0_init	16	static
+../board/peripherals.c:576:6:BOARD_InitPeripherals_cm33_core0	8	static
+../board/peripherals.c:589:6:BOARD_InitBootPeripherals	8	static
