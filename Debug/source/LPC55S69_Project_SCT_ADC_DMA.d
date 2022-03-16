@@ -26,6 +26,7 @@ source/LPC55S69_Project_SCT_ADC_DMA.o \
  C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_clock.h \
  C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h \
  C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\board/pin_mux.h \
+ C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_power.h \
  C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\board/clock_config.h \
  C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\device/LPC55S69_cm33_core0.h \
  C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\utilities/fsl_debug_console.h \
@@ -57,6 +58,7 @@ C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_clock.h:
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\board/pin_mux.h:
+C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_power.h:
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\board/clock_config.h:
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\device/LPC55S69_cm33_core0.h:
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\utilities/fsl_debug_console.h:

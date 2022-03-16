@@ -558,6 +558,15 @@ void BOARD_InitADC(void); /* Function assigned for the Cortex-M33 (Core #0) */
  */
 void BOARD_InitSCT(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
+#define PIO0_1_DIGIMODE_DIGITAL 0x01u /*!<@brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO0_1_FUNC_ALT0 0x00u        /*!<@brief Selects pin function.: Alternative connection 0. */
+
+/*!
+ * @brief Configures pin routing and optionally pin electrical features.
+ *
+ */
+void BOARD_InitDMA(void); /* Function assigned for the Cortex-M33 (Core #0) */
+
 #if defined(__cplusplus)
 }
 #endif

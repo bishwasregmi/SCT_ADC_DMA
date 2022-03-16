@@ -229,13 +229,14 @@ void BOARD_BootClockPLL100M(void)
 name: BOARD_BootClockPLL150M
 called_from_default_init: true
 outputs:
-- {id: ASYNCADC_clock.outFreq, value: 150 MHz}
+- {id: ASYNCADC_clock.outFreq, value: 18.75 MHz}
 - {id: System_clock.outFreq, value: 150 MHz}
 settings:
 - {id: PLL0_Mode, value: Normal}
 - {id: PLL1_Mode, value: Normal}
 - {id: ENABLE_CLKIN_ENA, value: Enabled}
 - {id: ENABLE_SYSTEM_CLK_OUT, value: Enabled}
+- {id: SYSCON.ADCCLKDIV.scale, value: '8', locked: true}
 - {id: SYSCON.ADCCLKSEL.sel, value: SYSCON.PLL0_BYPASS}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.PLL0_BYPASS}
 - {id: SYSCON.PLL0CLKSEL.sel, value: ANACTRL.fro_12m_clk}
@@ -289,7 +290,7 @@ void BOARD_BootClockPLL150M(void)
     /*!< Set up dividers */
     CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
     CLOCK_SetClkDiv(kCLOCK_DivAdcAsyncClk, 0U, true);               /*!< Reset ADCCLKDIV divider counter and halt it */
-    CLOCK_SetClkDiv(kCLOCK_DivAdcAsyncClk, 1U, false);         /*!< Set ADCCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivAdcAsyncClk, 8U, false);         /*!< Set ADCCLKDIV divider to value 8 */
 
     /*!< Set up clock selectors - Attach clocks to the peripheries */
     CLOCK_AttachClk(kPLL0_to_MAIN_CLK);                 /*!< Switch MAIN_CLK to PLL0 */
