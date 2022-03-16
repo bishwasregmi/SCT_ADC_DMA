@@ -63,22 +63,91 @@ instance:
 - peripheral: 'DMA0'
 - config_sets:
   - fsl_dma:
-    - dma_table: []
-    - dma_channels: []
-    - init_interrupt: 'false'
-    - dma_interrupt:
+    - dma_table:
+      - 0: []
+    - dma_channels:
+      - 0:
+        - apiMode: 'trans'
+        - dma_channel:
+          - channel_prefix_id: 'CH0'
+          - DMA_source: 'kDma0RequestADC0FIFO0'
+          - init_channel_priority: 'true'
+          - dma_priority: 'kDMA_ChannelPriority0'
+          - enable_custom_name: 'false'
+        - peripheral_request: 'true'
+        - init_trigger_config: 'true'
+        - trigger_config:
+          - type: 'kDMA_LowLevelTrigger'
+          - burst: 'kDMA_SingleTransfer'
+          - wrap: 'kDMA_NoWrap'
+        - trans_config:
+          - init_callback: 'true'
+          - callback_function: 'DMA_callback_testf'
+          - callback_user_data: ''
+        - tcd_config:
+          - 0:
+            - tcdID: 'CH0_TCD0'
+            - linkToNextTCD: '0'
+            - transferCfg:
+              - reload: 'true'
+              - clrTrig: 'true'
+              - intA: 'true'
+              - intB: 'false'
+              - width: 'kDMA_Transfer32BitWidth'
+              - srcInc: 'kDMA_AddressInterleave0xWidth'
+              - dstInc: 'kDMA_AddressInterleave1xWidth'
+              - transBytes: '12'
+            - srcAddr:
+              - addrType: 'startAddr'
+              - addr_expr: '(uint32_t)(&(ADC0->RESFIFO[0]))'
+              - addr_def: ''
+            - dstAddr:
+              - addrType: 'startAddr'
+              - addr_expr: 'dstAddr'
+              - addr_def: 'uint32_t dstAddr[5]'
+        - allocateTCD: 'cache'
+        - initTCD: 'CH0_TCD0'
+    - dma_interrupt_trans:
       - IRQn: 'DMA0_IRQn'
-      - enable_interrrupt: 'enabled'
-      - enable_priority: 'false'
+      - enable_priority: 'true'
       - priority: '0'
-      - enable_custom_name: 'false'
-    - quick_selection: 'default'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 
-/* Empty initialization function (commented out)
+  /* Channel CH0 global variables */
+dma_handle_t DMA0_CH0_Handle;
+const dma_channel_trigger_t DMA0_CH0_trigger_config = {
+  .type = kDMA_LowLevelTrigger,
+  .burst = kDMA_SingleTransfer,
+  .wrap = kDMA_NoWrap
+};
+SDK_ALIGN(dma_descriptor_t DMA0_CH0_TCDs_config[1], FSL_FEATURE_DMA_LINK_DESCRIPTOR_ALIGN_SIZE)
+ = {
+  {
+    .xfercfg = DMA_CHANNEL_XFER(true, true, true, false, kDMA_Transfer32BitWidth, kDMA_AddressInterleave0xWidth, kDMA_AddressInterleave1xWidth, 12U),
+    .srcEndAddr = (void *)DMA_DESCRIPTOR_END_ADDRESS((uint32_t)(&(ADC0->RESFIFO[0])), (uint32_t)kDMA_AddressInterleave0xWidth, 12U, (uint32_t)kDMA_Transfer32BitWidth),
+    .dstEndAddr = (void *)DMA_DESCRIPTOR_END_ADDRESS(dstAddr, (uint32_t)kDMA_AddressInterleave1xWidth, 12U, (uint32_t)kDMA_Transfer32BitWidth),
+    .linkToNextDesc = &DMA0_CH0_TCD0_config
+  }
+};
+
 static void DMA0_init(void) {
-} */
+  /* Interrupt vector DMA0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(DMA0_IRQN, DMA0_IRQ_PRIORITY);
+
+  /* Channel CH0 initialization */
+  /* Enable the DMA 21 channel in the DMA */
+  DMA_EnableChannel(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL);
+  /* Set the DMA 21 channel priority */
+  DMA_SetChannelPriority(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL, kDMA_ChannelPriority0);
+  /* Create the DMA DMA0_CH0_Handle handle */
+  DMA_CreateHandle(&DMA0_CH0_Handle, DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL);
+  DMA_SetCallback(&DMA0_CH0_Handle, DMA_callback_testf, NULL);
+  /* Configuration of the channel trigger and peripheral request */
+  DMA_SetChannelConfig(DMA0_DMA_BASEADDR, DMA0_CH0_DMA_CHANNEL, (dma_channel_trigger_t *)&DMA0_CH0_trigger_config, true);
+  /* DMA0 transfer submit */
+  DMA_SubmitChannelDescriptor(&DMA0_CH0_Handle, &DMA0_CH0_TCD0_config);
+}
 
 /***********************************************************************************************************************
  * NVIC initialization code
@@ -95,7 +164,9 @@ instance:
 - peripheral: 'NVIC'
 - config_sets:
   - nvic:
-    - interrupt_table: []
+    - interrupt_table:
+      - 0: []
+      - 1: []
     - interrupts: []
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
@@ -133,10 +204,10 @@ instance:
       - triggerPriorityPolicy: 'kLPADC_TriggerPriorityPreemptImmediately'
       - enableConvPause: 'false'
       - convPauseDelay: '0'
-      - FIFO0Watermark: '2'
-      - FIFO1Watermark: '2'
+      - FIFO0Watermark: '3'
+      - FIFO1Watermark: '3'
       - FIFO0WatermarkDMA: 'true'
-      - FIFO1WatermarkDMA: 'true'
+      - FIFO1WatermarkDMA: 'false'
     - lpadcConvCommandConfig:
       - 0:
         - commandId: '1'
@@ -191,11 +262,11 @@ instance:
         - enableHardwareTrigger: 'true'
     - IRQ_cfg:
       - interrupt_type: 'kLPADC_Trigger2CompletionInterruptEnable'
-      - enable_irq: 'false'
+      - enable_irq: 'true'
       - adc_interrupt:
         - IRQn: 'ADC0_IRQn'
         - enable_interrrupt: 'enabled'
-        - enable_priority: 'false'
+        - enable_priority: 'true'
         - priority: '0'
         - enable_custom_name: 'false'
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -210,8 +281,8 @@ const lpadc_config_t ADC0_config = {
   .triggerPriorityPolicy = kLPADC_TriggerPriorityPreemptImmediately,
   .enableConvPause = false,
   .convPauseDelay = 0UL,
-  .FIFO0Watermark = 2UL,
-  .FIFO1Watermark = 2UL
+  .FIFO0Watermark = 3UL,
+  .FIFO1Watermark = 3UL
 };
 lpadc_conv_command_config_t ADC0_commandsConfig[3] = {
   {
@@ -275,8 +346,6 @@ static void ADC0_init(void) {
   LPADC_DoAutoCalibration(ADC0_PERIPHERAL);
   /* Enable DMA request on FIFO 0 watermark event */
   LPADC_EnableFIFO0WatermarkDMA(ADC0_PERIPHERAL, true);
-  /* Enable DMA request on FIFO 1 watermark event */
-  LPADC_EnableFIFO1WatermarkDMA(ADC0_PERIPHERAL, true);
   /* Configure conversion command 1. */
   LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, 1, &ADC0_commandsConfig[0]);
   /* Configure conversion command 2. */
@@ -285,8 +354,12 @@ static void ADC0_init(void) {
   LPADC_SetConvCommandConfig(ADC0_PERIPHERAL, 3, &ADC0_commandsConfig[2]);
   /* Configure trigger 2. */
   LPADC_SetConvTriggerConfig(ADC0_PERIPHERAL, 2, &ADC0_triggersConfig[0]);
+  /* Interrupt vector ADC0_IRQn priority settings in the NVIC. */
+  NVIC_SetPriority(ADC0_IRQN, ADC0_IRQ_PRIORITY);
   /* Enable interrupts from LPADC */
   LPADC_EnableInterrupts(ADC0_PERIPHERAL, (kLPADC_Trigger2CompletionInterruptEnable));
+  /* Enable interrupt ADC0_IRQn request in the NVIC. */
+  EnableIRQ(ADC0_IRQN);
 }
 
 /***********************************************************************************************************************
@@ -310,12 +383,12 @@ instance:
       - clockSourceFreq: 'BOARD_BootClockFRO12M'
       - SCTInputClockSourceFreq: 'custom:0'
       - clockSelect: 'kSCTIMER_Clock_On_Rise_Input_0'
-      - enableCounterUnify: 'false'
+      - enableCounterUnify: 'true'
       - enableBidirection_l: 'false'
       - enableBidirection_h: 'false'
       - prescale_l: '240'
-      - prescale_h: '1'
-      - outInitState: 'SCTIMER_OUTPUT_0_MASK SCTIMER_OUTPUT_3_MASK SCTIMER_OUTPUT_4_MASK'
+      - prescale_h: '240'
+      - outInitState: 'SCTIMER_OUTPUT_0_MASK'
       - inputsync: ''
     - enableIRQ: 'false'
     - interrupt:
@@ -332,78 +405,78 @@ instance:
     - events:
       - 0:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '1'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_0'
       - 1:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '2'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_0'
       - 2:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '3'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_0'
       - 3:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '4'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_0'
       - 4:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '5'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_0'
       - 5:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
@@ -413,29 +486,29 @@ instance:
             - output: 'kSCTIMER_Out_0'
           - 2:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
       - 6:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '60000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '1000000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '7'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
       - 7:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '8'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_4'
@@ -444,15 +517,15 @@ instance:
             - output: 'kSCTIMER_Out_3'
       - 8:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '50000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '100000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '9'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
           - 2:
             - action: 'OutputToggle'
             - output: 'kSCTIMER_Out_4'
@@ -461,15 +534,18 @@ instance:
             - output: 'kSCTIMER_Out_3'
       - 9:
         - type: 'kSCTIMER_MatchEventOnly'
-        - matchValue: '60000'
-        - counter: 'kSCTIMER_Counter_L'
+        - matchValue: '1000000'
+        - counter: 'kSCTIMER_Counter_U'
         - actions:
           - 0:
             - action: 'NextState'
             - nextState: '0'
           - 1:
             - action: 'CounterLimit'
-            - counter: 'kSCTIMER_Counter_L'
+            - counter: 'kSCTIMER_Counter_U'
+          - 2:
+            - action: 'DmaTrigger'
+            - dmaRequest: '21'
     - states:
       - 0:
         - events: 'event0'
@@ -494,14 +570,14 @@ instance:
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
 /* clang-format on */
 const sctimer_config_t SCT0_initConfig = {
-  .enableCounterUnify = false,
+  .enableCounterUnify = true,
   .clockMode = kSCTIMER_System_ClockMode,
   .clockSelect = kSCTIMER_Clock_On_Rise_Input_0,
   .enableBidirection_l = false,
   .enableBidirection_h = false,
   .prescale_l = 239U,
-  .prescale_h = 0U,
-  .outInitState = (uint8_t)(SCT0_OUTPUT_0 | SCT0_OUTPUT_3 | SCT0_OUTPUT_4),
+  .prescale_h = 239U,
+  .outInitState = (uint8_t)(SCT0_OUTPUT_0),
   .inputsync = 0U
 };
 uint32_t SCT0_event[10];
@@ -509,65 +585,66 @@ uint32_t SCT0_event[10];
 static void SCT0_init(void) {
   SCTIMER_Init(SCT0_PERIPHERAL, &SCT0_initConfig);
   /* Initialization of state 0 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[0]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[0]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 1, SCT0_event[0]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[0]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[0]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_0, SCT0_event[0]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 1 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[1]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[1]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 2, SCT0_event[1]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[1]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[1]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_0, SCT0_event[1]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 2 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[2]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[2]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 3, SCT0_event[2]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[2]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[2]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_0, SCT0_event[2]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 3 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[3]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[3]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 4, SCT0_event[3]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[3]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[3]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_0, SCT0_event[3]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 4 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[4]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[4]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 5, SCT0_event[4]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[4]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[4]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_0, SCT0_event[4]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 5 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[5]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[5]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 6, SCT0_event[5]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_0, SCT0_event[5]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[5]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[5]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 6 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 60000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[6]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 1000000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[6]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 7, SCT0_event[6]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[6]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[6]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 7 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[7]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[7]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 8, SCT0_event[7]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[7]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[7]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_4, SCT0_event[7]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_3, SCT0_event[7]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 8 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 50000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[8]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[8]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 9, SCT0_event[8]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[8]);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[8]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_4, SCT0_event[8]);
   SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_3, SCT0_event[8]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 9 */
-  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 60000, kSCTIMER_Out_0, kSCTIMER_Counter_L, &SCT0_event[9]);
+  SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 1000000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[9]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 0, SCT0_event[9]);
-  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_L, SCT0_event[9]);
-  SCTIMER_StartTimer(SCT0_PERIPHERAL, kSCTIMER_Counter_L);
+  SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[9]);
+  SCTIMER_SetupDmaTriggerAction(SCT0_PERIPHERAL, 21, SCT0_event[9]);
+  SCTIMER_StartTimer(SCT0_PERIPHERAL, kSCTIMER_Counter_U);
 }
 
 /***********************************************************************************************************************
@@ -579,6 +656,7 @@ void BOARD_InitPeripherals_cm33_core0(void)
   DMA_Init(DMA0_DMA_BASEADDR);
 
   /* Initialize components */
+  DMA0_init();
   ADC0_init();
   SCT0_init();
 }

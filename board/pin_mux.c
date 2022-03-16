@@ -20,6 +20,7 @@ board: LPCXpresso55S69
 #include "fsl_common.h"
 #include "fsl_gpio.h"
 #include "fsl_iocon.h"
+#include "fsl_inputmux.h"
 #include "pin_mux.h"
 
 /* FUNCTION ************************************************************************************************************
@@ -33,6 +34,7 @@ void BOARD_InitBootPins(void)
     BOARD_InitDEBUG_UARTPins();
     BOARD_InitADC();
     BOARD_InitSCT();
+    BOARD_InitDMA();
 }
 
 /* clang-format off */
@@ -1131,6 +1133,49 @@ void BOARD_InitSCT(void)
                          * : Enable Digital mode.
                          * Digital input is enabled. */
                         | IOCON_PIO_DIGIMODE(PIO1_4_DIGIMODE_DIGITAL));
+}
+
+/* clang-format off */
+/*
+ * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+BOARD_InitDMA:
+- options: {callFromInitBoot: 'true', coreID: cm33_core0, enableClock: 'true'}
+- pin_list:
+  - {pin_num: '7', peripheral: DMA0, signal: 'TRIG0, 21', pin_signal: PIO0_1/FC3_CTS_SDA_SSEL0/CT_INP0/SCT_GPI1/SD1_CLK/CMP0_OUT/SECURE_GPIO0_1}
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
+ */
+/* clang-format on */
+
+/* FUNCTION ************************************************************************************************************
+ *
+ * Function Name : BOARD_InitDMA
+ * Description   : Configures pin routing and optionally pin electrical features.
+ *
+ * END ****************************************************************************************************************/
+/* Function assigned for the Cortex-M33 (Core #0) */
+void BOARD_InitDMA(void)
+{
+    /* Enables the clock for the Input Mux.: Enable Clock. */
+    CLOCK_EnableClock(kCLOCK_InputMux);
+    /* Enables the clock for the I/O controller.: Enable Clock. */
+    CLOCK_EnableClock(kCLOCK_Iocon);
+    /* Pin interrupt 0 is selected as trigger input for DMA0 channel 21 */
+    INPUTMUX_AttachSignal(INPUTMUX, 21U, kINPUTMUX_PinInt0ToDma0);
+    /* PIO0_1 is selected for PINT input 0 */
+    INPUTMUX_AttachSignal(INPUTMUX, 0U, kINPUTMUX_GpioPort0Pin1ToPintsel);
+
+    IOCON->PIO[0][1] = ((IOCON->PIO[0][1] &
+                         /* Mask bits to zero which are setting */
+                         (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                        /* Selects pin function.
+                         * : PORT01 (pin 7) is configured as PIO0_1. */
+                        | IOCON_PIO_FUNC(PIO0_1_FUNC_ALT0)
+
+                        /* Select Digital mode.
+                         * : Enable Digital mode.
+                         * Digital input is enabled. */
+                        | IOCON_PIO_DIGIMODE(PIO0_1_DIGIMODE_DIGITAL));
 }
 /***********************************************************************************************************************
  * EOF

@@ -25,8 +25,24 @@ extern "C" {
 /* Definitions for BOARD_InitPeripherals_cm33_core0 functional group */
 /* Used DMA device. */
 #define DMA0_DMA_BASEADDR DMA0
+/* DMA0 interrupt vector ID (number). */
+#define DMA0_IRQN DMA0_IRQn
+/* DMA0 interrupt vector priority. */
+#define DMA0_IRQ_PRIORITY 0
+
+  /* Channel CH0 definitions */
+/* Selected DMA channel number. */
+#define DMA0_CH0_DMA_CHANNEL 21
+/* TCD structure index 0 definition */
+#define DMA0_CH0_TCD0_config DMA0_CH0_TCDs_config[0]
 /* Alias for ADC0 peripheral */
 #define ADC0_PERIPHERAL ADC0
+/* ADC0 interrupt vector ID (number). */
+#define ADC0_IRQN ADC0_IRQn
+/* ADC0 interrupt vector priority. */
+#define ADC0_IRQ_PRIORITY 0
+/* ADC0 interrupt handler identifier. */
+#define ADC0_IRQHANDLER ADC0_IRQHandler
 /* BOARD_InitPeripherals_cm33_core0 defines for SCT0 */
 /* Definition of peripheral ID */
 #define SCT0_PERIPHERAL SCT0
@@ -38,19 +54,26 @@ extern "C" {
 #define SCT0_IRQHANDLER SCT0_IRQHandler
 /* SCTimer output 0 mask */
 #define SCT0_OUTPUT_0 (1U <<  kSCTIMER_Out_0)
-/* SCTimer output 3 mask */
-#define SCT0_OUTPUT_3 (1U <<  kSCTIMER_Out_3)
-/* SCTimer output 4 mask */
-#define SCT0_OUTPUT_4 (1U <<  kSCTIMER_Out_4)
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
+extern dma_handle_t DMA0_CH0_Handle;
+/* DMA0 channel CH0 TCD array */
+SDK_ALIGN(extern dma_descriptor_t DMA0_CH0_TCDs_config[1], FSL_FEATURE_DMA_LINK_DESCRIPTOR_ALIGN_SIZE);
+/* CH0_TCD0 destination address extern definition */
+extern uint32_t dstAddr[5];
 extern const lpadc_config_t ADC0_config;
 extern lpadc_conv_command_config_t ADC0_commandsConfig[3];
 extern lpadc_conv_trigger_config_t ADC0_triggersConfig[1];
 extern const sctimer_config_t SCT0_initConfig;
 extern uint32_t SCT0_event[10];
+
+/***********************************************************************************************************************
+ * Callback functions
+ **********************************************************************************************************************/
+/* DMA callback function for the 21 channel.*/
+extern void DMA_callback_testf(struct _dma_handle *, void *, bool, uint32_t);
 
 /***********************************************************************************************************************
  * Initialization functions

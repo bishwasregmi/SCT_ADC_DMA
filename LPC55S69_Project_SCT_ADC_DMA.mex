@@ -543,6 +543,34 @@
                   <pin peripheral="SCT0" signal="OUT, 3" pin_num="68" pin_signal="PIO1_26/FC2_CTS_SDA_SSEL0/SCT0_OUT3/CT_INP3/UTICK_CAP1/HS_SPI_SSEL3/PLU_IN5"/>
                </pins>
             </function>
+            <function name="BOARD_InitDMA">
+               <description>Configures pin routing and optionally pin electrical features.</description>
+               <options>
+                  <callFromInitBoot>true</callFromInitBoot>
+                  <coreID>cm33_core0</coreID>
+                  <enableClock>true</enableClock>
+               </options>
+               <dependencies>
+                  <dependency resourceType="Peripheral" resourceId="DMA0" description="Peripheral DMA0 is not initialized" problem_level="1" source="Pins:BOARD_InitDMA">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.common" description="Pins initialization requires the COMMON Driver in the project." problem_level="2" source="Pins:BOARD_InitDMA">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="SWComponent" resourceId="platform.drivers.inputmux" description="Pins initialization requires the INPUTMUX Driver in the project." problem_level="2" source="Pins:BOARD_InitDMA">
+                     <feature name="enabled" evaluation="equal" configuration="cm33_core0">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+               </dependencies>
+               <pins>
+                  <pin peripheral="DMA0" signal="TRIG0, 21" pin_num="7" pin_signal="PIO0_1/FC3_CTS_SDA_SSEL0/CT_INP0/SCT_GPI1/SD1_CLK/CMP0_OUT/SECURE_GPIO0_1"/>
+               </pins>
+            </function>
          </functions_list>
       </pins>
       <clocks name="Clocks" version="9.0" enabled="true" update_project_code="true">
@@ -741,7 +769,7 @@
                   <clock_source id="SYSCON.XTAL32M.outFreq" value="16 MHz" locked="false" enabled="true"/>
                </clock_sources>
                <clock_outputs>
-                  <clock_output id="ASYNCADC_clock.outFreq" value="150 MHz" locked="false" accuracy=""/>
+                  <clock_output id="ASYNCADC_clock.outFreq" value="18.75 MHz" locked="false" accuracy=""/>
                   <clock_output id="System_clock.outFreq" value="150 MHz" locked="false" accuracy=""/>
                </clock_outputs>
                <clock_settings>
@@ -749,6 +777,7 @@
                   <setting id="PLL1_Mode" value="Normal" locked="false"/>
                   <setting id="ENABLE_CLKIN_ENA" value="Enabled" locked="false"/>
                   <setting id="ENABLE_SYSTEM_CLK_OUT" value="Enabled" locked="false"/>
+                  <setting id="SYSCON.ADCCLKDIV.scale" value="8" locked="true"/>
                   <setting id="SYSCON.ADCCLKSEL.sel" value="SYSCON.PLL0_BYPASS" locked="false"/>
                   <setting id="SYSCON.MAINCLKSELB.sel" value="SYSCON.PLL0_BYPASS" locked="false"/>
                   <setting id="SYSCON.PLL0CLKSEL.sel" value="ANACTRL.fro_12m_clk" locked="false"/>
@@ -875,6 +904,11 @@
                <description></description>
                <options/>
                <dependencies>
+                  <dependency resourceType="PeripheralUnifiedSignal" resourceId="DMA0.dma_trig.21" description="Trigger 21 not routed." problem_level="1" source="Peripherals:BOARD_InitPeripherals_cm33_core0">
+                     <feature name="routed" evaluation="">
+                        <data type="Boolean">true</data>
+                     </feature>
+                  </dependency>
                   <dependency resourceType="ClockOutput" resourceId="ASYNCADC_clock" description="ASYNCADC clock is inactive." problem_level="2" source="Peripherals:BOARD_InitPeripherals_cm33_core0">
                      <feature name="frequency" evaluation="greaterThan">
                         <data type="Frequency" unit="Hz">0</data>
@@ -969,21 +1003,74 @@
                <instances>
                   <instance name="NVIC" uuid="e16f2201-9670-45ba-b12f-c38aa89a6bf5" type="nvic" type_id="nvic_57b5eef3774cc60acaede6f5b8bddc67" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
                      <config_set name="nvic">
-                        <array name="interrupt_table"/>
+                        <array name="interrupt_table">
+                           <struct name="0"/>
+                           <struct name="1"/>
+                        </array>
                         <array name="interrupts"/>
                      </config_set>
                   </instance>
                   <instance name="DMA0" uuid="f34c1cef-4767-406a-8f7d-c288b50c2552" type="lpc_dma" type_id="lpc_dma_c13ca997a68f2ca6c666916ba13db7d7" mode="basic" peripheral="DMA0" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
-                     <config_set name="fsl_dma" quick_selection="default">
-                        <array name="dma_table"/>
-                        <array name="dma_channels"/>
-                        <setting name="init_interrupt" value="false"/>
-                        <struct name="dma_interrupt">
+                     <config_set name="fsl_dma">
+                        <array name="dma_table">
+                           <struct name="0"/>
+                        </array>
+                        <array name="dma_channels">
+                           <struct name="0">
+                              <setting name="apiMode" value="trans"/>
+                              <struct name="dma_channel">
+                                 <setting name="channel_prefix_id" value="CH0"/>
+                                 <setting name="DMA_source" value="kDma0RequestADC0FIFO0"/>
+                                 <setting name="init_channel_priority" value="true"/>
+                                 <setting name="dma_priority" value="kDMA_ChannelPriority0"/>
+                                 <setting name="enable_custom_name" value="false"/>
+                              </struct>
+                              <setting name="peripheral_request" value="true"/>
+                              <setting name="init_trigger_config" value="true"/>
+                              <struct name="trigger_config">
+                                 <setting name="type" value="kDMA_LowLevelTrigger"/>
+                                 <setting name="burst" value="kDMA_SingleTransfer"/>
+                                 <setting name="wrap" value="kDMA_NoWrap"/>
+                              </struct>
+                              <struct name="trans_config">
+                                 <setting name="init_callback" value="true"/>
+                                 <setting name="callback_function" value="DMA_callback_testf"/>
+                                 <setting name="callback_user_data" value=""/>
+                              </struct>
+                              <array name="tcd_config">
+                                 <struct name="0">
+                                    <setting name="tcdID" value="CH0_TCD0"/>
+                                    <setting name="linkToNextTCD" value="0"/>
+                                    <struct name="transferCfg">
+                                       <setting name="reload" value="true"/>
+                                       <setting name="clrTrig" value="true"/>
+                                       <setting name="intA" value="true"/>
+                                       <setting name="intB" value="false"/>
+                                       <setting name="width" value="kDMA_Transfer32BitWidth"/>
+                                       <setting name="srcInc" value="kDMA_AddressInterleave0xWidth"/>
+                                       <setting name="dstInc" value="kDMA_AddressInterleave1xWidth"/>
+                                       <setting name="transBytes" value="12"/>
+                                    </struct>
+                                    <struct name="srcAddr">
+                                       <setting name="addrType" value="startAddr"/>
+                                       <setting name="addr_expr" value="(uint32_t)(&amp;(ADC0-&gt;RESFIFO[0]))"/>
+                                       <setting name="addr_def" value=""/>
+                                    </struct>
+                                    <struct name="dstAddr">
+                                       <setting name="addrType" value="startAddr"/>
+                                       <setting name="addr_expr" value="dstAddr"/>
+                                       <setting name="addr_def" value="uint32_t dstAddr[5]"/>
+                                    </struct>
+                                 </struct>
+                              </array>
+                              <setting name="allocateTCD" value="cache"/>
+                              <setting name="initTCD" value="CH0_TCD0"/>
+                           </struct>
+                        </array>
+                        <struct name="dma_interrupt_trans">
                            <setting name="IRQn" value="DMA0_IRQn"/>
-                           <setting name="enable_interrrupt" value="enabled"/>
-                           <setting name="enable_priority" value="false"/>
+                           <setting name="enable_priority" value="true"/>
                            <setting name="priority" value="0"/>
-                           <setting name="enable_custom_name" value="false"/>
                         </struct>
                      </config_set>
                   </instance>
@@ -1003,10 +1090,10 @@
                            <setting name="triggerPriorityPolicy" value="kLPADC_TriggerPriorityPreemptImmediately"/>
                            <setting name="enableConvPause" value="false"/>
                            <setting name="convPauseDelay" value="0"/>
-                           <setting name="FIFO0Watermark" value="2"/>
-                           <setting name="FIFO1Watermark" value="2"/>
+                           <setting name="FIFO0Watermark" value="3"/>
+                           <setting name="FIFO1Watermark" value="3"/>
                            <setting name="FIFO0WatermarkDMA" value="true"/>
-                           <setting name="FIFO1WatermarkDMA" value="true"/>
+                           <setting name="FIFO1WatermarkDMA" value="false"/>
                         </struct>
                         <array name="lpadcConvCommandConfig">
                            <struct name="0">
@@ -1072,11 +1159,11 @@
                                  <id>kLPADC_Trigger2CompletionInterruptEnable</id>
                               </selected>
                            </set>
-                           <setting name="enable_irq" value="false"/>
+                           <setting name="enable_irq" value="true"/>
                            <struct name="adc_interrupt">
                               <setting name="IRQn" value="ADC0_IRQn"/>
                               <setting name="enable_interrrupt" value="enabled"/>
-                              <setting name="enable_priority" value="false"/>
+                              <setting name="enable_priority" value="true"/>
                               <setting name="priority" value="0"/>
                               <setting name="enable_custom_name" value="false"/>
                            </struct>
@@ -1091,16 +1178,14 @@
                            <setting name="clockSourceFreq" value="BOARD_BootClockFRO12M"/>
                            <setting name="SCTInputClockSourceFreq" value="custom:0"/>
                            <setting name="clockSelect" value="kSCTIMER_Clock_On_Rise_Input_0"/>
-                           <setting name="enableCounterUnify" value="false"/>
+                           <setting name="enableCounterUnify" value="true"/>
                            <setting name="enableBidirection_l" value="false"/>
                            <setting name="enableBidirection_h" value="false"/>
                            <setting name="prescale_l" value="240"/>
-                           <setting name="prescale_h" value="1"/>
+                           <setting name="prescale_h" value="240"/>
                            <set name="outInitState">
                               <selected>
                                  <id>SCTIMER_OUTPUT_0_MASK</id>
-                                 <id>SCTIMER_OUTPUT_3_MASK</id>
-                                 <id>SCTIMER_OUTPUT_4_MASK</id>
                               </selected>
                            </set>
                            <set name="inputsync">
@@ -1123,7 +1208,7 @@
                         <array name="events">
                            <struct name="0">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1142,7 +1227,7 @@
                            </struct>
                            <struct name="1">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1161,7 +1246,7 @@
                            </struct>
                            <struct name="2">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1180,7 +1265,7 @@
                            </struct>
                            <struct name="3">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1199,7 +1284,7 @@
                            </struct>
                            <struct name="4">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1218,7 +1303,7 @@
                            </struct>
                            <struct name="5">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1237,7 +1322,7 @@
                            </struct>
                            <struct name="6">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="60000"/>
+                              <setting name="matchValue" value="1000000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1252,7 +1337,7 @@
                            </struct>
                            <struct name="7">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1275,7 +1360,7 @@
                            </struct>
                            <struct name="8">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="50000"/>
+                              <setting name="matchValue" value="100000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1298,7 +1383,7 @@
                            </struct>
                            <struct name="9">
                               <setting name="type" value="kSCTIMER_MatchEventOnly"/>
-                              <setting name="matchValue" value="60000"/>
+                              <setting name="matchValue" value="1000000"/>
                               <setting name="counter" value="kSCTIMER_Counter_L"/>
                               <array name="actions">
                                  <struct name="0">
@@ -1308,6 +1393,10 @@
                                  <struct name="1">
                                     <setting name="action" value="CounterLimit"/>
                                     <setting name="counter" value="kSCTIMER_Counter_L"/>
+                                 </struct>
+                                 <struct name="2">
+                                    <setting name="action" value="DmaTrigger"/>
+                                    <setting name="dmaRequest" value="21"/>
                                  </struct>
                               </array>
                            </struct>
@@ -1395,7 +1484,10 @@
                <instances>
                   <instance name="NVIC_2" uuid="ed843158-8b17-47a9-8047-4c28e5d5e59d" type="nvic" type_id="nvic_57b5eef3774cc60acaede6f5b8bddc67" mode="general" peripheral="NVIC" enabled="true" comment="" custom_name_enabled="false" editing_lock="false">
                      <config_set name="nvic">
-                        <array name="interrupt_table"/>
+                        <array name="interrupt_table">
+                           <struct name="0"/>
+                           <struct name="1"/>
+                        </array>
                         <array name="interrupts"/>
                      </config_set>
                   </instance>

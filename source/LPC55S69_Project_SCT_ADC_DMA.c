@@ -36,21 +36,47 @@
 #include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
+#include "fsl_power.h"
 #include "clock_config.h"
 #include "LPC55S69_cm33_core0.h"
 #include "fsl_debug_console.h"
 /* TODO: insert other include files here. */
 
 /* TODO: insert other definitions and declarations here. */
-/* ADC0_IRQn interrupt handler */
-void ADC0_IRQHANDLER(void) {
-  /*  Place your code here */
-  /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
-     Store immediate overlapping exception return operation might vector to incorrect interrupt. */
-  #if defined __CORTEX_M && (__CORTEX_M == 4U)
-    __DSB();
-  #endif
-}
+
+
+/* CH0_TCD0 destination address extern definition */
+uint32_t dstAddr[5] = {0};
+
+
+lpadc_conv_result_t mLpadcResultConfigStruct0;			// TESTING ADC
+
+/* DMA0 callback function*/
+ void DMA_callback_testf(struct _dma_handle * handle, void *param, bool transferDone, uint32_t tcds) {
+
+	 if (transferDone)
+	     {
+
+	     	printf("DMA called \n");
+	     	printf("%u \t %u \t %u \t %u \t %u \n", dstAddr[0]>>16, dstAddr[1]>>16, dstAddr[2]>>16, dstAddr[3]>>16, dstAddr[4]>>16 );
+	     	dstAddr[0] = 0;
+	     	dstAddr[1] = 0;
+	     	dstAddr[2] = 0;
+	     	printf("%u \t %u \t %u \n", dstAddr[0], dstAddr[1], dstAddr[2] );
+	     }
+ }
+
+ /* ADC0_IRQn interrupt handler */
+ void ADC0_IRQHANDLER(void) {
+   /*  Place your code here */
+   /* Add for ARM errata 838869, affects Cortex-M4, Cortex-M4F
+      Store immediate overlapping exception return operation might vector to incorrect interrupt. */
+
+	 printf("ADC ISR \n");
+	 printf("%u, \n", ((ADC0->FCTRL[0]) && 0xF)); 	// Fcount
+	 printf("%u, \n", (((ADC0->FCTRL[0])>>16) && 0xF)); 	// Watermark level
+ }
+
 
 /*
  * @brief   Application entry point.
@@ -66,14 +92,25 @@ int main(void) {
     BOARD_InitDebugConsole();
 #endif
 
+
+    POWER_DisablePD(kPDRUNCFG_PD_LDOGPADC);	// Power on ADC
     PRINTF("Hello World\n");
+
+    DMA_StartTransfer(&DMA0_CH0_Handle);
 
     /* Force the counter to be placed into memory. */
     volatile static int i = 0 ;
     /* Enter an infinite loop, just incrementing a counter. */
     while(1) {
-        i++ ;
-        /* 'Dummy' NOP to allow source level single stepping of
+    	i++ ;
+
+		//TESTING ADC
+    	while (!LPADC_GetConvResult(ADC0, &mLpadcResultConfigStruct0, 0U)){}
+    	printf( "%d adc called \n", i);
+		//END TESTING ADC
+
+
+    	/* 'Dummy' NOP to allow source level single stepping of
             tight while() loop */
         __asm volatile ("nop");
     }
