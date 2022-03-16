@@ -54,6 +54,8 @@ extern "C" {
 #define SCT0_IRQHANDLER SCT0_IRQHandler
 /* SCTimer output 0 mask */
 #define SCT0_OUTPUT_0 (1U <<  kSCTIMER_Out_0)
+/* SCTimer output 3 mask */
+#define SCT0_OUTPUT_3 (1U <<  kSCTIMER_Out_3)
 
 /***********************************************************************************************************************
  * Global variables

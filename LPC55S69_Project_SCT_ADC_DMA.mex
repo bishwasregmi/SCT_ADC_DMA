@@ -1147,16 +1147,16 @@
                               <setting name="triggerId" value="2"/>
                               <setting name="targetCommandId" value="1"/>
                               <setting name="delayPower" value="0"/>
-                              <setting name="priority" value="false"/>
+                              <setting name="priority" value="true"/>
                               <setting name="channelAFIFOSelect" value="0"/>
-                              <setting name="channelBFIFOSelect" value="0"/>
+                              <setting name="channelBFIFOSelect" value="1"/>
                               <setting name="enableHardwareTrigger" value="true"/>
                            </struct>
                         </array>
                         <struct name="IRQ_cfg">
                            <set name="interrupt_type">
                               <selected>
-                                 <id>kLPADC_Trigger2CompletionInterruptEnable</id>
+                                 <id>kLPADC_FIFO0WatermarkInterruptEnable</id>
                               </selected>
                            </set>
                            <setting name="enable_irq" value="true"/>
@@ -1186,6 +1186,7 @@
                            <set name="outInitState">
                               <selected>
                                  <id>SCTIMER_OUTPUT_0_MASK</id>
+                                 <id>SCTIMER_OUTPUT_3_MASK</id>
                               </selected>
                            </set>
                            <set name="inputsync">
@@ -1349,11 +1350,11 @@
                                     <setting name="counter" value="kSCTIMER_Counter_L"/>
                                  </struct>
                                  <struct name="2">
-                                    <setting name="action" value="OutputToggle"/>
+                                    <setting name="action" value="OutputSet"/>
                                     <setting name="output" value="kSCTIMER_Out_4"/>
                                  </struct>
                                  <struct name="3">
-                                    <setting name="action" value="OutputToggle"/>
+                                    <setting name="action" value="OutputClear"/>
                                     <setting name="output" value="kSCTIMER_Out_3"/>
                                  </struct>
                               </array>
@@ -1372,11 +1373,11 @@
                                     <setting name="counter" value="kSCTIMER_Counter_L"/>
                                  </struct>
                                  <struct name="2">
-                                    <setting name="action" value="OutputToggle"/>
+                                    <setting name="action" value="OutputClear"/>
                                     <setting name="output" value="kSCTIMER_Out_4"/>
                                  </struct>
                                  <struct name="3">
-                                    <setting name="action" value="OutputToggle"/>
+                                    <setting name="action" value="OutputSet"/>
                                     <setting name="output" value="kSCTIMER_Out_3"/>
                                  </struct>
                               </array>

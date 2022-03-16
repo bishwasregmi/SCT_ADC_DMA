@@ -6,7 +6,7 @@
  * Generated linker script file for LPC55S69
  * Created from linkscript.ldt by FMCreateLinkLibraries
  * Using Freemarker v2.3.30
- * MCUXpresso IDE v11.5.0 [Build 7232] [2022-01-11] on Mar 16, 2022, 4:10:30 PM
+ * MCUXpresso IDE v11.5.0 [Build 7232] [2022-01-11] on Mar 16, 2022, 6:48:38 PM
  */
 
 INCLUDE "LPC55S69_Project_SCT_ADC_DMA_Debug_library.ld"

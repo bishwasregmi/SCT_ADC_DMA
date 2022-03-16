@@ -49,8 +49,6 @@
 uint32_t dstAddr[5] = {0};
 
 
-lpadc_conv_result_t mLpadcResultConfigStruct0;			// TESTING ADC
-
 /* DMA0 callback function*/
  void DMA_callback_testf(struct _dma_handle * handle, void *param, bool transferDone, uint32_t tcds) {
 
@@ -73,8 +71,7 @@ lpadc_conv_result_t mLpadcResultConfigStruct0;			// TESTING ADC
       Store immediate overlapping exception return operation might vector to incorrect interrupt. */
 
 	 printf("ADC ISR \n");
-	 printf("%u, \n", ((ADC0->FCTRL[0]) && 0xF)); 	// Fcount
-	 printf("%u, \n", (((ADC0->FCTRL[0])>>16) && 0xF)); 	// Watermark level
+	 printf("RESFIFO[0] count %d \n", (ADC0->FCTRL[0])&0x1F); 	// Fcount 4:0    Watermark level 19:16
  }
 
 
@@ -104,10 +101,6 @@ int main(void) {
     while(1) {
     	i++ ;
 
-		//TESTING ADC
-    	while (!LPADC_GetConvResult(ADC0, &mLpadcResultConfigStruct0, 0U)){}
-    	printf( "%d adc called \n", i);
-		//END TESTING ADC
 
 
     	/* 'Dummy' NOP to allow source level single stepping of

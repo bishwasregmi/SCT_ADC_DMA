@@ -256,12 +256,12 @@ instance:
         - triggerId: '2'
         - targetCommandId: '1'
         - delayPower: '0'
-        - priority: 'false'
+        - priority: 'true'
         - channelAFIFOSelect: '0'
-        - channelBFIFOSelect: '0'
+        - channelBFIFOSelect: '1'
         - enableHardwareTrigger: 'true'
     - IRQ_cfg:
-      - interrupt_type: 'kLPADC_Trigger2CompletionInterruptEnable'
+      - interrupt_type: 'kLPADC_FIFO0WatermarkInterruptEnable'
       - enable_irq: 'true'
       - adc_interrupt:
         - IRQn: 'ADC0_IRQn'
@@ -333,8 +333,8 @@ lpadc_conv_trigger_config_t ADC0_triggersConfig[1] = {
     .targetCommandId = 1,
     .delayPower = 0UL,
     .channelAFIFOSelect = 0,
-    .channelBFIFOSelect = 0,
-    .priority = 1,
+    .channelBFIFOSelect = 1,
+    .priority = 0,
     .enableHardwareTrigger = true
   }
 };
@@ -357,7 +357,7 @@ static void ADC0_init(void) {
   /* Interrupt vector ADC0_IRQn priority settings in the NVIC. */
   NVIC_SetPriority(ADC0_IRQN, ADC0_IRQ_PRIORITY);
   /* Enable interrupts from LPADC */
-  LPADC_EnableInterrupts(ADC0_PERIPHERAL, (kLPADC_Trigger2CompletionInterruptEnable));
+  LPADC_EnableInterrupts(ADC0_PERIPHERAL, (kLPADC_FIFO0WatermarkInterruptEnable));
   /* Enable interrupt ADC0_IRQn request in the NVIC. */
   EnableIRQ(ADC0_IRQN);
 }
@@ -388,7 +388,7 @@ instance:
       - enableBidirection_h: 'false'
       - prescale_l: '240'
       - prescale_h: '240'
-      - outInitState: 'SCTIMER_OUTPUT_0_MASK'
+      - outInitState: 'SCTIMER_OUTPUT_0_MASK SCTIMER_OUTPUT_3_MASK'
       - inputsync: ''
     - enableIRQ: 'false'
     - interrupt:
@@ -510,10 +510,10 @@ instance:
             - action: 'CounterLimit'
             - counter: 'kSCTIMER_Counter_U'
           - 2:
-            - action: 'OutputToggle'
+            - action: 'OutputSet'
             - output: 'kSCTIMER_Out_4'
           - 3:
-            - action: 'OutputToggle'
+            - action: 'OutputClear'
             - output: 'kSCTIMER_Out_3'
       - 8:
         - type: 'kSCTIMER_MatchEventOnly'
@@ -527,10 +527,10 @@ instance:
             - action: 'CounterLimit'
             - counter: 'kSCTIMER_Counter_U'
           - 2:
-            - action: 'OutputToggle'
+            - action: 'OutputClear'
             - output: 'kSCTIMER_Out_4'
           - 3:
-            - action: 'OutputToggle'
+            - action: 'OutputSet'
             - output: 'kSCTIMER_Out_3'
       - 9:
         - type: 'kSCTIMER_MatchEventOnly'
@@ -577,7 +577,7 @@ const sctimer_config_t SCT0_initConfig = {
   .enableBidirection_h = false,
   .prescale_l = 239U,
   .prescale_h = 239U,
-  .outInitState = (uint8_t)(SCT0_OUTPUT_0),
+  .outInitState = (uint8_t)(SCT0_OUTPUT_0 | SCT0_OUTPUT_3),
   .inputsync = 0U
 };
 uint32_t SCT0_event[10];
@@ -629,15 +629,15 @@ static void SCT0_init(void) {
   SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[7]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 8, SCT0_event[7]);
   SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[7]);
-  SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_4, SCT0_event[7]);
-  SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_3, SCT0_event[7]);
+  SCTIMER_SetupOutputSetAction(SCT0_PERIPHERAL, kSCTIMER_Out_4, SCT0_event[7]);
+  SCTIMER_SetupOutputClearAction(SCT0_PERIPHERAL, kSCTIMER_Out_3, SCT0_event[7]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 8 */
   SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 100000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[8]);
   SCTIMER_SetupNextStateAction(SCT0_PERIPHERAL, 9, SCT0_event[8]);
   SCTIMER_SetupCounterLimitAction(SCT0_PERIPHERAL, kSCTIMER_Counter_U, SCT0_event[8]);
-  SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_4, SCT0_event[8]);
-  SCTIMER_SetupOutputToggleAction(SCT0_PERIPHERAL, kSCTIMER_Out_3, SCT0_event[8]);
+  SCTIMER_SetupOutputClearAction(SCT0_PERIPHERAL, kSCTIMER_Out_4, SCT0_event[8]);
+  SCTIMER_SetupOutputSetAction(SCT0_PERIPHERAL, kSCTIMER_Out_3, SCT0_event[8]);
   SCTIMER_IncreaseState(SCT0_PERIPHERAL);
   /* Initialization of state 9 */
   SCTIMER_CreateAndScheduleEvent(SCT0_PERIPHERAL, kSCTIMER_MatchEventOnly, 1000000, kSCTIMER_Out_0, kSCTIMER_Counter_U, &SCT0_event[9]);
