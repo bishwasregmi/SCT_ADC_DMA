@@ -47,7 +47,9 @@
 
 /* CH0_TCD0 destination address extern definition */
 uint32_t dstAddr[5] = {0};
+uint32_t dstAddr2[5] = {0};
 
+uint32_t sensor_array[3072] = {0};
 
 /* DMA0 callback function*/
  void DMA_callback_testf(struct _dma_handle * handle, void *param, bool transferDone, uint32_t tcds) {
@@ -56,11 +58,19 @@ uint32_t dstAddr[5] = {0};
 	     {
 
 	     	printf("DMA called \n");
-	     	printf("%u \t %u \t %u \t %u \t %u \n", dstAddr[0]>>16, dstAddr[1]>>16, dstAddr[2]>>16, dstAddr[3]>>16, dstAddr[4]>>16 );
-	     	dstAddr[0] = 0;
+	     	printf("tcds : %d \n", tcds );
+
+	     	printf("%u \t %u \t %u \t %u \t %u \n", dstAddr[0]&0xFFFF, dstAddr[1]&0xFFFF, dstAddr[2]&0xFFFF, dstAddr[3], dstAddr[4] );
+	     	printf("%u \t %u \t %u \t %u \t %u \n", dstAddr2[0]&0xFFFF, dstAddr2[1]&0xFFFF, dstAddr2[2]&0xFFFF, dstAddr2[3], dstAddr2[4] );
+			dstAddr[0] = 0;
 	     	dstAddr[1] = 0;
 	     	dstAddr[2] = 0;
+
+	     	dstAddr2[0] = 0;
+			dstAddr2[1] = 0;
+			dstAddr2[2] = 0;
 	     	printf("%u \t %u \t %u \n", dstAddr[0], dstAddr[1], dstAddr[2] );
+	     	printf("%u \t %u \t %u \n", dstAddr2[0], dstAddr2[1], dstAddr2[2] );
 	     }
  }
 

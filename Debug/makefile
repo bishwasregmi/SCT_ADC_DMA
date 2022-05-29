@@ -9,12 +9,19 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include utilities/subdir.mk
+-include usb/host/subdir.mk
+-include usb/device/source/lpcip3511/subdir.mk
+-include usb/device/source/subdir.mk
+-include usb/device/class/cdc/subdir.mk
+-include usb/device/class/subdir.mk
 -include startup/subdir.mk
+-include source/generated/subdir.mk
 -include source/subdir.mk
 -include drivers/subdir.mk
 -include device/subdir.mk
 -include component/uart/subdir.mk
 -include component/serial_manager/subdir.mk
+-include component/osa/subdir.mk
 -include component/lists/subdir.mk
 -include board/subdir.mk
 -include subdir.mk

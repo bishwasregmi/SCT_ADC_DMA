@@ -121,14 +121,36 @@ void BOARD_InitDEBUG_UARTPins(void); /* Function assigned for the Cortex-M33 (Co
  */
 void BOARD_InitSWD_DEBUGPins(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
-#define IOCON_PIO_DIGITAL_EN 0x0100u  /*!<@brief Enables digital function */
-#define IOCON_PIO_FUNC4 0x04u         /*!<@brief Selects pin function 4 */
-#define IOCON_PIO_FUNC7 0x07u         /*!<@brief Selects pin function 7 */
-#define IOCON_PIO_INV_DI 0x00u        /*!<@brief Input function is not inverted */
-#define IOCON_PIO_MODE_INACT 0x00u    /*!<@brief No addition pin function */
-#define IOCON_PIO_MODE_PULLUP 0x20u   /*!<@brief Selects pull-up function */
-#define IOCON_PIO_OPENDRAIN_DI 0x00u  /*!<@brief Open drain is disabled */
-#define IOCON_PIO_SLEW_STANDARD 0x00u /*!<@brief Standard mode, output slew rate control is enabled */
+/*!
+ * @brief Enables digital function */
+#define IOCON_PIO_DIGITAL_EN 0x0100u
+/*!
+ * @brief Selects pin function 4 */
+#define IOCON_PIO_FUNC4 0x04u
+/*!
+ * @brief Selects pin function 7 */
+#define IOCON_PIO_FUNC7 0x07u
+/*!
+ * @brief Input function is not inverted */
+#define IOCON_PIO_INV_DI 0x00u
+/*!
+ * @brief No addition pin function */
+#define IOCON_PIO_MODE_INACT 0x00u
+/*!
+ * @brief Selects pull-up function */
+#define IOCON_PIO_MODE_PULLUP 0x20u
+/*!
+ * @brief Open drain is disabled */
+#define IOCON_PIO_OPENDRAIN_DI 0x00u
+/*!
+ * @brief Standard mode, output slew rate control is enabled */
+#define IOCON_PIO_SLEW_STANDARD 0x00u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_27_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Selects pin function.: Alternative connection 4. */
+#define PIO1_27_FUNC_ALT4 0x04u
 
 /*! @name USB0_DP (number 97), P10[3]/D10[3]/USB0_FS_P
   @{ */
@@ -174,11 +196,11 @@ void BOARD_InitUSBPins(void); /* Function assigned for the Cortex-M33 (Core #0) 
   @{ */
 
 /* Symbols to be used with GPIO driver */
-#define BOARD_INITLEDSPINS_LED_BULE_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITLEDSPINS_LED_BULE_GPIO_PIN_MASK (1U << 4U) /*!<@brief GPIO pin mask */
-#define BOARD_INITLEDSPINS_LED_BULE_PORT 1U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITLEDSPINS_LED_BULE_PIN 4U                   /*!<@brief PORT pin number */
-#define BOARD_INITLEDSPINS_LED_BULE_PIN_MASK (1U << 4U)      /*!<@brief PORT pin mask */
+#define BOARD_INITLEDSPINS_LED_BLUE_GPIO GPIO                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITLEDSPINS_LED_BLUE_GPIO_PIN_MASK (1U << 4U) /*!<@brief GPIO pin mask */
+#define BOARD_INITLEDSPINS_LED_BLUE_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITLEDSPINS_LED_BLUE_PIN 4U                   /*!<@brief PORT pin number */
+#define BOARD_INITLEDSPINS_LED_BLUE_PIN_MASK (1U << 4U)      /*!<@brief PORT pin mask */
                                                              /* @} */
 
 /*! @name PIO1_6 (number 5), R80/P18[9]/LEDB/PWM_ARD
@@ -547,9 +569,9 @@ void BOARD_InitADC(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
 /*! @name PIO1_4 (number 1), R78/P18[5]/LEDR/PWM_ARD
   @{ */
-#define BOARD_INITSCT_LED_BULE_PORT 1U                  /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITSCT_LED_BULE_PIN 4U                   /*!<@brief PORT pin number */
-#define BOARD_INITSCT_LED_BULE_PIN_MASK (1U << 4U)      /*!<@brief PORT pin mask */
+#define BOARD_INITSCT_LED_BLUE_PORT 1U                  /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITSCT_LED_BLUE_PIN 4U                   /*!<@brief PORT pin number */
+#define BOARD_INITSCT_LED_BLUE_PIN_MASK (1U << 4U)      /*!<@brief PORT pin mask */
                                                         /* @} */
 
 /*!
@@ -566,6 +588,22 @@ void BOARD_InitSCT(void); /* Function assigned for the Cortex-M33 (Core #0) */
  *
  */
 void BOARD_InitDMA(void); /* Function assigned for the Cortex-M33 (Core #0) */
+
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO0_14_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO0_27_DIGIMODE_DIGITAL 0x01u
+/*!
+ * @brief Select Digital mode.: Enable Digital mode. Digital input is enabled. */
+#define PIO1_1_DIGIMODE_DIGITAL 0x01u
+
+/*!
+ * @brief Configures pin routing and optionally pin electrical features.
+ *
+ */
+void BOARD_InitCLKOUT(void); /* Function assigned for the Cortex-M33 (Core #0) */
 
 #if defined(__cplusplus)
 }

@@ -11,8 +11,10 @@ C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:909:20:SCTIMER_SetupOutputClearAction	24	static
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:937:20:SCTIMER_SetupCounterLimitAction	24	static
 C:\Users\Bishwas\Documents\MCUXpressoIDE_11.5.0_7232\workspace\LPC55S69_Project_SCT_ADC_DMA\drivers/fsl_sctimer.h:1091:20:SCTIMER_SetupDmaTriggerAction	24	static
-../board/peripherals.c:134:13:DMA0_init	8	static
-../board/peripherals.c:342:13:ADC0_init	8	static
-../board/peripherals.c:585:13:SCT0_init	16	static
-../board/peripherals.c:653:6:BOARD_InitPeripherals_cm33_core0	8	static
-../board/peripherals.c:667:6:BOARD_InitBootPeripherals	8	static
+../board/peripherals.c:168:13:DMA0_init	8	static
+../board/peripherals.c:380:13:ADC0_init	8	static
+../board/peripherals.c:623:13:SCT0_init	16	static
+../board/peripherals.c:721:13:PLU_init	8	static
+../board/peripherals.c:829:13:USB0_init	8	static
+../board/peripherals.c:836:6:BOARD_InitPeripherals_cm33_core0	8	static
+../board/peripherals.c:852:6:BOARD_InitBootPeripherals	8	static

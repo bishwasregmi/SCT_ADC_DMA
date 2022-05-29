@@ -16,11 +16,18 @@ C_DEPS :=
 SUBDIRS := \
 board \
 component/lists \
+component/osa \
 component/serial_manager \
 component/uart \
 device \
 drivers \
 source \
+source/generated \
 startup \
+usb/device/class/cdc \
+usb/device/class \
+usb/device/source/lpcip3511 \
+usb/device/source \
+usb/host \
 utilities \
 

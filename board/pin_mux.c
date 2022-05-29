@@ -32,9 +32,11 @@ board: LPCXpresso55S69
 void BOARD_InitBootPins(void)
 {
     BOARD_InitDEBUG_UARTPins();
+    BOARD_InitUSBPins();
     BOARD_InitADC();
     BOARD_InitSCT();
     BOARD_InitDMA();
+    BOARD_InitCLKOUT();
 }
 
 /* clang-format off */
@@ -222,7 +224,7 @@ void BOARD_InitSWD_DEBUGPins(void)
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
 BOARD_InitUSBPins:
-- options: {callFromInitBoot: 'false', coreID: cm33_core0, enableClock: 'true'}
+- options: {callFromInitBoot: 'true', coreID: cm33_core0, enableClock: 'true'}
 - pin_list:
   - {pin_num: '97', peripheral: USBFSH, signal: USB_DP, pin_signal: USB0_DP}
   - {pin_num: '98', peripheral: USBFSH, signal: USB_DM, pin_signal: USB0_DM}
@@ -239,6 +241,7 @@ BOARD_InitUSBPins:
     invert: disabled, open_drain: disabled}
   - {pin_num: '80', peripheral: USBHSH, signal: USB_PORTPWRN, pin_signal: PIO1_29/FC7_RXD_SDA_MOSI_DATA/SD0_D6/SCT_GPI6/USB1_PORTPWRN/USB1_FRAME/PLU_IN2, mode: pullUp,
     slew_rate: standard, invert: disabled, open_drain: disabled}
+  - {pin_num: '85', peripheral: SYSCON, signal: CLKOUT, pin_signal: PIO1_27/FC2_RTS_SCL_SSEL1/SD0_D4/CTIMER0_MAT3/CLKOUT/PLU_IN4}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -299,6 +302,19 @@ void BOARD_InitUSBPins(void)
                                          IOCON_PIO_OPENDRAIN_DI);
     /* PORT1 PIN12 (coords: 67) is configured as USB0_PORTPWRN */
     IOCON_PinMuxSet(IOCON, 1U, 12U, port1_pin12_config);
+
+    IOCON->PIO[1][27] = ((IOCON->PIO[1][27] &
+                          /* Mask bits to zero which are setting */
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                         /* Selects pin function.
+                          * : PORT127 (pin 85) is configured as CLKOUT. */
+                         | IOCON_PIO_FUNC(PIO1_27_FUNC_ALT4)
+
+                         /* Select Digital mode.
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
+                         | IOCON_PIO_DIGIMODE(PIO1_27_DIGIMODE_DIGITAL));
 
     const uint32_t port1_pin29_config = (/* Pin is configured as USB1_PORTPWRN */
                                          IOCON_PIO_FUNC4 |
@@ -362,12 +378,12 @@ void BOARD_InitLEDsPins(void)
     /* Enables the clock for the GPIO1 module */
     CLOCK_EnableClock(kCLOCK_Gpio1);
 
-    gpio_pin_config_t LED_BULE_config = {
+    gpio_pin_config_t LED_BLUE_config = {
         .pinDirection = kGPIO_DigitalOutput,
         .outputLogic = 1U
     };
     /* Initialize GPIO functionality on pin PIO1_4 (pin 1)  */
-    GPIO_PinInit(BOARD_INITLEDSPINS_LED_BULE_GPIO, BOARD_INITLEDSPINS_LED_BULE_PORT, BOARD_INITLEDSPINS_LED_BULE_PIN, &LED_BULE_config);
+    GPIO_PinInit(BOARD_INITLEDSPINS_LED_BLUE_GPIO, BOARD_INITLEDSPINS_LED_BLUE_PORT, BOARD_INITLEDSPINS_LED_BLUE_PIN, &LED_BLUE_config);
 
     gpio_pin_config_t LED_RED_config = {
         .pinDirection = kGPIO_DigitalOutput,
@@ -383,7 +399,7 @@ void BOARD_InitLEDsPins(void)
     /* Initialize GPIO functionality on pin PIO1_7 (pin 9)  */
     GPIO_PinInit(BOARD_INITLEDSPINS_LED_GREEN_GPIO, BOARD_INITLEDSPINS_LED_GREEN_PORT, BOARD_INITLEDSPINS_LED_GREEN_PIN, &LED_GREEN_config);
 
-    const uint32_t LED_BULE = (/* Pin is configured as PIO1_4 */
+    const uint32_t LED_BLUE = (/* Pin is configured as PIO1_4 */
                                IOCON_PIO_FUNC0 |
                                /* Selects pull-up function */
                                IOCON_PIO_MODE_PULLUP |
@@ -396,7 +412,7 @@ void BOARD_InitLEDsPins(void)
                                /* Open drain is disabled */
                                IOCON_PIO_OPENDRAIN_DI);
     /* PORT1 PIN4 (coords: 1) is configured as PIO1_4 */
-    IOCON_PinMuxSet(IOCON, BOARD_INITLEDSPINS_LED_BULE_PORT, BOARD_INITLEDSPINS_LED_BULE_PIN, LED_BULE);
+    IOCON_PinMuxSet(IOCON, BOARD_INITLEDSPINS_LED_BLUE_PORT, BOARD_INITLEDSPINS_LED_BLUE_PIN, LED_BLUE);
 
     const uint32_t LED_RED = (/* Pin is configured as PIO1_6 */
                               IOCON_PIO_FUNC0 |
@@ -1176,6 +1192,71 @@ void BOARD_InitDMA(void)
                          * : Enable Digital mode.
                          * Digital input is enabled. */
                         | IOCON_PIO_DIGIMODE(PIO0_1_DIGIMODE_DIGITAL));
+}
+
+/* clang-format off */
+/*
+ * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
+BOARD_InitCLKOUT:
+- options: {callFromInitBoot: 'true', coreID: cm33_core0, enableClock: 'true'}
+- pin_list:
+  - {pin_num: '72', peripheral: PLU, signal: 'INPUT, 1', pin_signal: PIO0_14/FC1_RTS_SCL_SSEL1/UTICK_CAP1/CT_INP1/SCT_GPI1/FC1_TXD_SCL_MISO_WS/PLU_IN1/SECURE_GPIO0_14}
+  - {pin_num: '59', peripheral: PLU, signal: 'OUT, 4', pin_signal: PIO1_1/FC3_RXD_SDA_MOSI_DATA/CT_INP3/SCT_GPI5/HS_SPI_SSEL1/USB1_OVERCURRENTN/PLU_OUT4}
+  - {pin_num: '27', peripheral: PLU, signal: 'OUT, 0', pin_signal: PIO0_27/FC2_TXD_SCL_MISO_WS/CTIMER3_MAT2/SCT0_OUT6/FC7_RXD_SDA_MOSI_DATA/PLU_OUT0/SECURE_GPIO0_27}
+ * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
+ */
+/* clang-format on */
+
+/* FUNCTION ************************************************************************************************************
+ *
+ * Function Name : BOARD_InitCLKOUT
+ * Description   : Configures pin routing and optionally pin electrical features.
+ *
+ * END ****************************************************************************************************************/
+/* Function assigned for the Cortex-M33 (Core #0) */
+void BOARD_InitCLKOUT(void)
+{
+    /* Enables the clock for the I/O controller.: Enable Clock. */
+    CLOCK_EnableClock(kCLOCK_Iocon);
+
+    IOCON->PIO[0][14] = ((IOCON->PIO[0][14] &
+                          /* Mask bits to zero which are setting */
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                         /* Selects pin function.
+                          * : PORT014 (pin 72) is configured as PLU_IN1. */
+                         | IOCON_PIO_FUNC(0x09u)
+
+                         /* Select Digital mode.
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
+                         | IOCON_PIO_DIGIMODE(PIO0_14_DIGIMODE_DIGITAL));
+
+    IOCON->PIO[0][27] = ((IOCON->PIO[0][27] &
+                          /* Mask bits to zero which are setting */
+                          (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                         /* Selects pin function.
+                          * : PORT027 (pin 27) is configured as PLU_OUT0. */
+                         | IOCON_PIO_FUNC(0x09u)
+
+                         /* Select Digital mode.
+                          * : Enable Digital mode.
+                          * Digital input is enabled. */
+                         | IOCON_PIO_DIGIMODE(PIO0_27_DIGIMODE_DIGITAL));
+
+    IOCON->PIO[1][1] = ((IOCON->PIO[1][1] &
+                         /* Mask bits to zero which are setting */
+                         (~(IOCON_PIO_FUNC_MASK | IOCON_PIO_DIGIMODE_MASK)))
+
+                        /* Selects pin function.
+                         * : PORT11 (pin 59) is configured as PLU_OUT4. */
+                        | IOCON_PIO_FUNC(0x09u)
+
+                        /* Select Digital mode.
+                         * : Enable Digital mode.
+                         * Digital input is enabled. */
+                        | IOCON_PIO_DIGIMODE(PIO1_1_DIGIMODE_DIGITAL));
 }
 /***********************************************************************************************************************
  * EOF

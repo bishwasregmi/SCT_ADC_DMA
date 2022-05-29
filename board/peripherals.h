@@ -14,6 +14,8 @@
 #include "fsl_lpadc.h"
 #include "fsl_clock.h"
 #include "fsl_sctimer.h"
+#include "fsl_plu.h"
+#include "usb_device_composite.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,6 +37,8 @@ extern "C" {
 #define DMA0_CH0_DMA_CHANNEL 21
 /* TCD structure index 0 definition */
 #define DMA0_CH0_TCD0_config DMA0_CH0_TCDs_config[0]
+/* TCD structure index 1 definition */
+#define DMA0_CH0_TCD1_config DMA0_CH0_TCDs_config[1]
 /* Alias for ADC0 peripheral */
 #define ADC0_PERIPHERAL ADC0
 /* ADC0 interrupt vector ID (number). */
@@ -56,15 +60,20 @@ extern "C" {
 #define SCT0_OUTPUT_0 (1U <<  kSCTIMER_Out_0)
 /* SCTimer output 3 mask */
 #define SCT0_OUTPUT_3 (1U <<  kSCTIMER_Out_3)
+/* BOARD_InitPeripherals_cm33_core0 defines for PLU */
+/* Definition of peripheral ID */
+#define PLU_PERIPHERAL PLU
 
 /***********************************************************************************************************************
  * Global variables
  **********************************************************************************************************************/
 extern dma_handle_t DMA0_CH0_Handle;
 /* DMA0 channel CH0 TCD array */
-SDK_ALIGN(extern dma_descriptor_t DMA0_CH0_TCDs_config[1], FSL_FEATURE_DMA_LINK_DESCRIPTOR_ALIGN_SIZE);
+SDK_ALIGN(extern dma_descriptor_t DMA0_CH0_TCDs_config[2], FSL_FEATURE_DMA_LINK_DESCRIPTOR_ALIGN_SIZE);
 /* CH0_TCD0 destination address extern definition */
 extern uint32_t dstAddr[5];
+/* CH0_TCD1 destination address extern definition */
+extern uint32_t dstAddr2[5];
 extern const lpadc_config_t ADC0_config;
 extern lpadc_conv_command_config_t ADC0_commandsConfig[3];
 extern lpadc_conv_trigger_config_t ADC0_triggersConfig[1];

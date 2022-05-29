@@ -229,20 +229,33 @@ void BOARD_BootClockPLL100M(void)
 name: BOARD_BootClockPLL150M
 called_from_default_init: true
 outputs:
-- {id: ASYNCADC_clock.outFreq, value: 18.75 MHz}
-- {id: System_clock.outFreq, value: 150 MHz}
+- {id: ASYNCADC_clock.outFreq, value: 18 MHz}
+- {id: CLKOUT_clock.outFreq, value: 75 MHz}
+- {id: System_clock.outFreq, value: 144 MHz}
+- {id: USB0_clock.outFreq, value: 48 MHz}
+- {id: USB1_PHY_clock.outFreq, value: 16 MHz}
 settings:
 - {id: PLL0_Mode, value: Normal}
 - {id: PLL1_Mode, value: Normal}
 - {id: ENABLE_CLKIN_ENA, value: Enabled}
+- {id: ENABLE_PLL_USB_OUT, value: Enabled}
 - {id: ENABLE_SYSTEM_CLK_OUT, value: Enabled}
 - {id: SYSCON.ADCCLKDIV.scale, value: '8', locked: true}
 - {id: SYSCON.ADCCLKSEL.sel, value: SYSCON.PLL0_BYPASS}
+- {id: SYSCON.CLKOUTDIV.scale, value: '2', locked: true}
+- {id: SYSCON.CLKOUTSEL.sel, value: SYSCON.PLL1_BYPASS}
+- {id: SYSCON.MAINCLKSELA.sel, value: SYSCON.CLK_IN_EN}
 - {id: SYSCON.MAINCLKSELB.sel, value: SYSCON.PLL0_BYPASS}
 - {id: SYSCON.PLL0CLKSEL.sel, value: ANACTRL.fro_12m_clk}
-- {id: SYSCON.PLL0M_MULT.scale, value: '200', locked: true}
-- {id: SYSCON.PLL0N_DIV.scale, value: '8', locked: true}
+- {id: SYSCON.PLL0M_MULT.scale, value: '24', locked: true}
+- {id: SYSCON.PLL0N_DIV.scale, value: '1', locked: true}
 - {id: SYSCON.PLL0_PDEC.scale, value: '2', locked: true}
+- {id: SYSCON.PLL1CLKSEL.sel, value: ANACTRL.fro_12m_clk}
+- {id: SYSCON.PLL1M_MULT.scale, value: '200', locked: true}
+- {id: SYSCON.PLL1N_DIV.scale, value: '8', locked: true}
+- {id: SYSCON.PLL1_PDEC.scale, value: '2'}
+- {id: SYSCON.USB0CLKDIV.scale, value: '3', locked: true}
+- {id: SYSCON.USB0CLKSEL.sel, value: SYSCON.PLL0_BYPASS}
 sources:
 - {id: SYSCON.XTAL32M.outFreq, value: 16 MHz, enabled: true}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS **********/
@@ -269,32 +282,53 @@ void BOARD_BootClockPLL150M(void)
     CLOCK_SetupExtClocking(16000000U);                            /* Enable clk_in clock */
     SYSCON->CLOCK_CTRL |= SYSCON_CLOCK_CTRL_CLKIN_ENA_MASK;       /* Enable clk_in from XTAL32M clock  */
     ANACTRL->XO32M_CTRL |= ANACTRL_XO32M_CTRL_ENABLE_SYSTEM_CLK_OUT_MASK;    /* Enable clk_in to system  */
+    ANACTRL->XO32M_CTRL |= ANACTRL_XO32M_CTRL_ENABLE_PLL_USB_OUT_MASK;       /* Enable clk_in to HS USB  */
 
-    POWER_SetVoltageForFreq(150000000U);                  /*!< Set voltage for the one of the fastest clock outputs: System clock output */
-    CLOCK_SetFLASHAccessCyclesForFreq(150000000U);          /*!< Set FLASH wait states for core */
+    POWER_SetVoltageForFreq(144000000U);                  /*!< Set voltage for the one of the fastest clock outputs: System clock output */
+    CLOCK_SetFLASHAccessCyclesForFreq(144000000U);          /*!< Set FLASH wait states for core */
 
     /*!< Set up PLL */
     CLOCK_AttachClk(kFRO12M_to_PLL0);                    /*!< Switch PLL0CLKSEL to FRO12M */
     POWER_DisablePD(kPDRUNCFG_PD_PLL0);                  /* Ensure PLL is on  */
     POWER_DisablePD(kPDRUNCFG_PD_PLL0_SSCG);
     const pll_setup_t pll0Setup = {
-        .pllctrl = SYSCON_PLL0CTRL_CLKEN_MASK | SYSCON_PLL0CTRL_SELI(40U) | SYSCON_PLL0CTRL_SELP(31U),
-        .pllndec = SYSCON_PLL0NDEC_NDIV(8U),
+        .pllctrl = SYSCON_PLL0CTRL_CLKEN_MASK | SYSCON_PLL0CTRL_SELI(15U) | SYSCON_PLL0CTRL_SELP(7U),
+        .pllndec = SYSCON_PLL0NDEC_NDIV(1U),
         .pllpdec = SYSCON_PLL0PDEC_PDIV(1U),
-        .pllsscg = {0x0U,(SYSCON_PLL0SSCG1_MDIV_EXT(200U) | SYSCON_PLL0SSCG1_SEL_EXT_MASK)},
-        .pllRate = 150000000U,
+        .pllsscg = {0x0U,(SYSCON_PLL0SSCG1_MDIV_EXT(24U) | SYSCON_PLL0SSCG1_SEL_EXT_MASK)},
+        .pllRate = 144000000U,
         .flags =  PLL_SETUPFLAG_WAITLOCK
     };
     CLOCK_SetPLL0Freq(&pll0Setup);                       /*!< Configure PLL0 to the desired values */
 
+    /*!< Set up PLL1 */
+    CLOCK_AttachClk(kFRO12M_to_PLL1);                    /*!< Switch PLL1CLKSEL to FRO12M */
+    POWER_DisablePD(kPDRUNCFG_PD_PLL1);                  /* Ensure PLL is on  */
+    const pll_setup_t pll1Setup = {
+        .pllctrl = SYSCON_PLL1CTRL_CLKEN_MASK | SYSCON_PLL1CTRL_SELI(40U) | SYSCON_PLL1CTRL_SELP(31U),
+        .pllndec = SYSCON_PLL1NDEC_NDIV(8U),
+        .pllpdec = SYSCON_PLL1PDEC_PDIV(1U),
+        .pllmdec = SYSCON_PLL1MDEC_MDIV(200U),
+        .pllRate = 150000000U,
+        .flags =  PLL_SETUPFLAG_WAITLOCK
+    };
+    CLOCK_SetPLL1Freq(&pll1Setup);                        /*!< Configure PLL1 to the desired values */
+
     /*!< Set up dividers */
     CLOCK_SetClkDiv(kCLOCK_DivAhbClk, 1U, false);         /*!< Set AHBCLKDIV divider to value 1 */
+    CLOCK_SetClkDiv(kCLOCK_DivClkOut, 0U, true);               /*!< Reset CLKOUTDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivClkOut, 2U, false);         /*!< Set CLKOUTDIV divider to value 2 */
     CLOCK_SetClkDiv(kCLOCK_DivAdcAsyncClk, 0U, true);               /*!< Reset ADCCLKDIV divider counter and halt it */
     CLOCK_SetClkDiv(kCLOCK_DivAdcAsyncClk, 8U, false);         /*!< Set ADCCLKDIV divider to value 8 */
+    CLOCK_SetClkDiv(kCLOCK_DivUsb0Clk, 0U, true);               /*!< Reset USB0CLKDIV divider counter and halt it */
+    CLOCK_SetClkDiv(kCLOCK_DivUsb0Clk, 3U, false);         /*!< Set USB0CLKDIV divider to value 3 */
 
     /*!< Set up clock selectors - Attach clocks to the peripheries */
+    CLOCK_AttachClk(kPLL1_to_CLKOUT);                 /*!< Switch CLKOUT to PLL1 */
     CLOCK_AttachClk(kPLL0_to_MAIN_CLK);                 /*!< Switch MAIN_CLK to PLL0 */
     CLOCK_AttachClk(kPLL0_to_ADC_CLK);                 /*!< Switch ADC_CLK to PLL0 */
+    CLOCK_AttachClk(kPLL0_to_USB0_CLK);                 /*!< Switch USB0_CLK to PLL0 */
+    SYSCON->MAINCLKSELA = ((SYSCON->MAINCLKSELA & ~SYSCON_MAINCLKSELA_SEL_MASK) | SYSCON_MAINCLKSELA_SEL(1U));    /*!< Switch MAINCLKSELA to EXT_CLK even it is not used for MAINCLKSELB */
 
     /*!< Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKPLL150M_CORE_CLOCK;
